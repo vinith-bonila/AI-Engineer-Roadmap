@@ -1,0 +1,93 @@
+======================================================================
+Scenario 1. Needs a lookup AND retrieval. The most common shape.
+======================================================================
+
+--- Why did my payment fail? --------------------------------------
+answer:   Your payment of 499.00 INR on 2026-10-25 did not go through: your bank declined it because the account did not have enough money at the time. The card ending 4242 was used, and we have retried 2 times since. [help:insufficient_funds]
+stages:   validate_input -> route -> lookup_payment_data -> retrieve_documents -> assemble_context -> call_model -> validate_output -> log_trace
+problems: none
+trace:    "user_id": "user_a",
+          "account_id": "acct_1001",
+          "route_reason": "asks about this customer's own records, so a database lookup; asks what something means, so document retrieval",
+          "stages": [
+                    "validate_input",
+                    "route",
+                    "lookup_payment_data",
+                    "retrieve_documents",
+                    "assemble_context",
+                    "call_model",
+                    "validate_output",
+                    "log_trace"
+          ],
+          "retrieved": [
+                    "help:insufficient_funds"
+          ],
+          "approx_prompt_tokens": 172,
+          "approx_cost_usd": 0.000516,
+          "output_problems": []
+          latency_ms varies per run: 0.32
+
+======================================================================
+Scenario 2. Retrieval only. No customer data is touched at all.
+======================================================================
+
+--- What does your refund policy say? -----------------------------
+answer:   Subscription charges can be refunded within fourteen days of the charge date. [help:refund_policy]
+stages:   validate_input -> route -> retrieve_documents -> assemble_context -> call_model -> validate_output -> log_trace
+problems: none
+trace:    "user_id": "user_a",
+          "account_id": null,
+          "route_reason": "asks what something means, so document retrieval",
+          "stages": [
+                    "validate_input",
+                    "route",
+                    "retrieve_documents",
+                    "assemble_context",
+                    "call_model",
+                    "validate_output",
+                    "log_trace"
+          ],
+          "retrieved": [
+                    "help:refund_policy"
+          ],
+          "approx_prompt_tokens": 123,
+          "approx_cost_usd": 0.000369,
+          "output_problems": []
+          latency_ms varies per run: 0.09
+
+======================================================================
+Scenario 3. An action. Notice the approval stage appears in the list.
+======================================================================
+
+--- Please refund me for my subscription charge -------------------
+answer:   This request needs a person to approve it, so I have not moved any money. A support agent will review the request for 499.00 INR.
+stages:   validate_input -> route -> lookup_payment_data -> request_human_approval -> log_trace
+problems: none
+trace:    "user_id": "user_a",
+          "account_id": "acct_1001",
+          "route_reason": "asks about this customer's own records, so a database lookup; requests an action, so a tool call; the action moves money, so human approval",
+          "stages": [
+                    "validate_input",
+                    "route",
+                    "lookup_payment_data",
+                    "request_human_approval",
+                    "log_trace"
+          ],
+          "retrieved": [],
+          "halted_at": "request_human_approval",
+          "tool_executed": false,
+          "approx_prompt_tokens": 0,
+          "approx_cost_usd": 0.0,
+          "output_problems": []
+          latency_ms varies per run: 0.01
+
+======================================================================
+Scenario 4. Authorisation. The gate is in code, so it cannot be
+talked out of by any wording in the question or in a document.
+======================================================================
+
+PermissionError raised before any data was read: user user_a is not authorised to read acct_2002
+
+======================================================================
+Count the stages. The model was one of them.
+======================================================================

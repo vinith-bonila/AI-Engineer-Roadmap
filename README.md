@@ -208,15 +208,24 @@ It is a small single-page app with nine views, routed by the URL hash:
 | Home | Phase map, the next available topic, the projects, and a summary rail: progress donut, study streak, next reviews |
 | Roadmap | All 225 topics, searchable and filterable by status, source and phase |
 | Learn | Scaffolded lessons, the topics available now, and how a lesson works |
+| Lesson | The lesson itself, rendered: headings, tables, diagrams, highlighted code, the demo with its recorded output, the exercise, the quiz, and Previous/Next |
 | Projects | The five projects, their tags and locations, and every topic that exercises one |
 | Practice | Quizzes and the mastery gate |
 | Flashcards | The deck, one card at a time, answer hidden until you ask |
 | Progress | Overall, per phase, and where each topic came from |
 | Resources, About | Attribution, provenance and how the page is built |
 
-Selecting a topic opens its own view with prerequisites, what it unlocks, its
-recorded evidence and its lesson link. Light and dark themes, a keyboard-reachable
-layout and a phone-width layout throughout.
+Selecting a topic opens its lesson when one exists, and its detail page otherwise.
+Light and dark themes, a keyboard-reachable layout and a phone-width layout
+throughout.
+
+**Lessons are readable in the page.** The Markdown is rendered to HTML at build
+time by `scripts/markdown.py`, so a lesson opens as a formatted page with a
+chapter sidebar, an in-page contents, syntax-highlighted code and Previous/Next
+navigation, instead of downloading a `.md` file. The raw file is still one click
+away from the topic page. Flowcharts are plain SVG emitted by
+`scripts/flowchart.py`: no diagramming library, so they work offline and follow
+the theme.
 
 Everything on it is computed from `curriculum.json`, `tracker/review_schedule.json`
 and `flashcards/cards.csv` at build time. The page reads that state and never
@@ -363,7 +372,8 @@ ai-engineer-roadmap/
 │           ├── exercise.py       TODOs; no solution
 │           ├── test_exercise.py
 │           ├── quiz.md
-│           └── quiz_answers.md   do not open before attempting
+│           ├── quiz_answers.md   do not open before attempting
+│           └── demo_output.txt   recorded output, shown behind a toggle
 ├── tracker/
 │   ├── progress.md             written after assessments, by hand
 │   ├── review_schedule.json    written by review.py
@@ -375,12 +385,16 @@ ai-engineer-roadmap/
 │   ├── curriculum.py           loading, validation, derived calculations
 │   ├── build_roadmap.py        generates the Mermaid and HTML outputs
 │   ├── app_template.py         the single-page app shell: markup, CSS, script
+│   ├── markdown.py             Markdown to HTML, plus the code highlighter
+│   ├── flowchart.py            build-time SVG flowcharts, no library needed
 │   ├── status.py
 │   └── review.py
 └── tests/
     ├── conftest.py
     ├── test_curriculum.py
     ├── test_build_roadmap.py
+    ├── test_markdown.py
+    ├── test_flowchart.py
     ├── test_status.py
     └── test_review.py
 ```

@@ -28,6 +28,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   --track: #e1e7ee;
   --shadow: 0 1px 2px rgba(16, 32, 50, .06), 0 8px 24px rgba(16, 32, 50, .05);
   --hero-a: #2b1b55; --hero-b: #7b3f8c; --hero-c: #e4804f;
+  --tk-c: #5f6f80; --tk-s: #0a6b3d; --tk-k: #9226a0; --tk-n: #a1510c;
+  --tk-f: #1f5fa8; --tk-b: #8a5a00; --tk-d: #a1510c;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -40,6 +42,8 @@ HTML_TEMPLATE = r"""<!doctype html>
     --dn-bg: #0f3123; --dn-br: #5ec98e; --dn-tx: #c7f2d9;
     --track: #25303b;
     --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+    --tk-c: #92a6ba; --tk-s: #86dba8; --tk-k: #e8a2e6; --tk-n: #ffb77a;
+    --tk-f: #8fc3ff; --tk-b: #ffd79a; --tk-d: #ffb77a;
   }
 }
 :root[data-theme="dark"] {
@@ -52,6 +56,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   --dn-bg: #0f3123; --dn-br: #5ec98e; --dn-tx: #c7f2d9;
   --track: #25303b;
   --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+  --tk-c: #92a6ba; --tk-s: #86dba8; --tk-k: #e8a2e6; --tk-n: #ffb77a;
+  --tk-f: #8fc3ff; --tk-b: #ffd79a; --tk-d: #ffb77a;
 }
 * { box-sizing: border-box; }
 html, body { height: 100%; }
@@ -228,6 +234,65 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
   text-align: center; font-size: 1.05rem; font-weight: 600; }
 .flashcard .answer { font-weight: 400; font-size: .95rem; color: var(--muted); margin-top: 12px; }
 
+/* ---- rendered lesson ---------------------------------------------------- */
+.lessonbody { font-size: 15.5px; line-height: 1.7; }
+.lessonbody > h1:first-child { margin-top: 0; }
+.lessonbody h1 { font-size: 1.55rem; letter-spacing: -.02em; margin: 0 0 8px; }
+.lessonbody h2 { font-size: 1.16rem; margin: 30px 0 8px; padding-top: 16px;
+  border-top: 1px solid var(--border); scroll-margin-top: 80px; }
+.lessonbody h3 { font-size: 1rem; margin: 20px 0 6px; }
+.lessonbody p { margin: 11px 0; }
+.lessonbody ul, .lessonbody ol { margin: 11px 0; padding-left: 1.35rem; }
+.lessonbody li { margin: 5px 0; }
+.lessonbody li.task { list-style: none; margin-left: -1.2rem; }
+.lessonbody li.task .box { color: var(--accent); margin-right: 6px; }
+.lessonbody table { margin: 15px 0; }
+.lessonbody blockquote { margin: 15px 0; padding: 10px 14px; color: var(--muted);
+  border-left: 4px solid var(--accent); background: var(--surface-2);
+  border-radius: 0 10px 10px 0; }
+.lessonbody hr { border: none; border-top: 1px solid var(--border); margin: 26px 0; }
+.lessonbody a { font-weight: 600; }
+code, pre { font-family: ui-monospace, "Cascadia Code", "Consolas", "Courier New", monospace; }
+.lessonbody code, .inlinecode { background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 5px; padding: 1px 5px; font-size: .88em; }
+figure.diagram { margin: 20px 0; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; overflow-x: auto; }
+figure.diagram svg { max-width: 100%; height: auto; margin: 0 auto; }
+pre.ascii { background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; overflow-x: auto; font-size: 11.5px;
+  line-height: 1.35; margin: 16px 0; }
+pre.ascii code, pre.code code { background: none; border: none; padding: 0;
+  font-size: inherit; }
+.example { margin: 18px 0; border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; background: var(--surface); }
+.example-head { background: var(--surface-2); border-bottom: 1px solid var(--border);
+  padding: 7px 13px; font-size: .7rem; text-transform: uppercase;
+  letter-spacing: .08em; font-weight: 800; color: var(--muted);
+  display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+pre.code { margin: 0; padding: 14px; overflow-x: auto; font-size: 12.8px;
+  line-height: 1.55; }
+pre.code .c { color: var(--tk-c); font-style: italic; }
+pre.code .s { color: var(--tk-s); }
+pre.code .k { color: var(--tk-k); font-weight: 600; }
+pre.code .n { color: var(--tk-n); }
+pre.code .f { color: var(--tk-f); }
+pre.code .b { color: var(--tk-b); }
+pre.code .d { color: var(--tk-d); }
+.pager { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.crumb { font-size: .8rem; color: var(--muted); margin: 0 0 6px; }
+.crumb button { font-size: inherit; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px; }
+.toc a { font-size: .78rem; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 4px 10px; text-decoration: none; color: var(--muted); }
+.toc a:hover { color: var(--accent); border-color: var(--accent); }
+.flowwrap { overflow-x: auto; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; }
+.flowwrap svg { max-width: 720px; margin: 0 auto; }
+.chapter { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); font-weight: 800; padding: 10px 11px 4px; }
+.warn { border-left: 3px solid var(--nr-br); background: var(--nr-bg); color: var(--nr-tx);
+  padding: 10px 12px; border-radius: 0 10px 10px 0; font-size: .86rem; }
+
 /* Narrow screens last, so same-specificity overrides actually win. */
 @media (max-width: 1180px) {
   .shell { grid-template-columns: 206px minmax(0, 1fr); }
@@ -372,6 +437,16 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
   var MIN_DONE = allTopics.filter(function (t) { return t.status === "done"; })
                           .reduce(function (a, t) { return a + t.estimated_minutes; }, 0);
   var OVERALL = pct(COUNTS.done, TOTAL);
+
+  var ORDER = allTopics.map(function (t) { return t.id; });
+  function neighbour(id, delta) {
+    var i = ORDER.indexOf(id) + delta;
+    return (i >= 0 && i < ORDER.length) ? byId[ORDER[i]] : null;
+  }
+  function hasLesson(id) { return !!(DATA.lessons && DATA.lessons[id]); }
+  function openRoute(t) {
+    return hasLesson(t.id) ? "#/lesson/" + t.id : "#/topic/" + t.id;
+  }
 
   function available() {
     return allTopics.filter(function (t) {
@@ -598,8 +673,11 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
     ]);
     wrap.appendChild(card("Browse " + TOTAL + " topics", null,
       [controls, h("p", { "class": "sub", text:
-        "Search from the box at the top. Selecting a topic shows its prerequisites, " +
-        "what it unlocks and its lesson." })]));
+        "Search from the box at the top. Selecting a topic opens its lesson when one " +
+        "exists, and its detail page otherwise." })]));
+    wrap.appendChild(card("The whole curriculum, in order",
+      h("span", { "class": "sub", text: "generated from curriculum.json" }),
+      [h("div", { "class": "flowwrap", html: DATA.flowchart })]));
 
     var host = h("div", { "class": "stack", id: "topics" });
     wrap.appendChild(host);
@@ -656,7 +734,7 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
     empty.style.display = shownTotal === 0 ? "" : "none";
   }
 
-  function selectTopic(id) { go("#/topic/" + id); }
+  function selectTopic(id) { go(openRoute(byId[id])); }
 
   VIEWS.topic = function (id) {
     var t = byId[id];
@@ -692,8 +770,13 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
             on: { click: function () { go("#/topic/" + n); } } })]);
         }))
       : "Nothing depends on this topic."]);
-    row("Lesson", [t.scaffolded
-      ? h("a", { href: "../" + t.lesson_path, text: "Open lesson.md" })
+    row("Lesson", [hasLesson(t.id)
+      ? h("span", null, [
+          h("button", { "class": "link", type: "button", text: "Read the lesson",
+            on: { click: function () { go("#/lesson/" + t.id); } } }),
+          "  -  ",
+          h("a", { href: "../" + t.lesson_path, text: "source file" })
+        ])
       : "Not scaffolded yet. The lesson is created when you reach this topic."]);
     var rev = (DATA.reviews || {})[t.id];
     row("Next review", [rev && rev.next_review
@@ -730,6 +813,135 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
     ]);
   }
 
+  var shown = {};
+
+  function pager(t) {
+    var prev = neighbour(t.id, -1), next = neighbour(t.id, 1);
+    function side(target, label, align) {
+      if (!target) return h("span");
+      return h("button", { "class": "btn ghost", type: "button",
+        style: align === "right" ? "margin-left:auto" : "",
+        on: { click: function () { go(openRoute(target)); } } },
+        [label + ": " + target.phase.order + "." + target.order + " " + target.title]);
+    }
+    return h("div", { "class": "pager" },
+      [side(prev, "Previous"), side(next, "Next", "right")]);
+  }
+
+  function codeBlock(headLabel, codeHtml, extra) {
+    var head = h("div", { "class": "example-head" }, [headLabel]);
+    if (extra) head.appendChild(extra);
+    return h("div", { "class": "example" },
+      [head, h("pre", { "class": "code" }, [h("code", { html: codeHtml })])]);
+  }
+
+  VIEWS.lesson = function (id) {
+    var t = byId[id];
+    var L = (DATA.lessons || {})[id];
+    if (!t) return h("div", { "class": "empty", text: "No topic with id " + id });
+    if (!L) {
+      return card("Not written yet", null, [
+        h("p", { text: "The lesson for " + t.title + " is created when you reach it." }),
+        h("button", { "class": "btn", type: "button", text: "See the topic",
+          on: { click: function () { go("#/topic/" + t.id); } } })
+      ]);
+    }
+    var wrap = h("div", { "class": "stack" });
+
+    var crumb = h("p", { "class": "crumb" }, [
+      h("button", { "class": "link", type: "button", text: "Roadmap",
+        on: { click: function () { go("#/roadmap"); } } }),
+      "  /  ",
+      h("button", { "class": "link", type: "button",
+        text: "Phase " + t.phase.order + ". " + t.phase.title,
+        on: { click: function () { go("#/phase/" + t.phase.id); } } }),
+      "  /  " + t.phase.order + "." + t.order
+    ]);
+
+    var head = h("section", { "class": "card" }, [h("div", { "class": "body" }, [
+      crumb, pager(t),
+      h("p", { "class": "sub", style: "margin-top:10px" },
+        [h("span", { "class": "pill", text: LABELS[t.status] }),
+         "  " + t.estimated_minutes + " minute lesson  -  " +
+         (SOURCES[t.source] || t.source) + "  -  " + t.id]),
+      L.headings.length ? h("div", { "class": "toc", style: "margin-top:10px" },
+        L.headings.map(function (x) {
+          return h("a", { href: "#" + x.id, text: x.text });
+        })) : null
+    ])]);
+    wrap.appendChild(head);
+
+    wrap.appendChild(h("section", { "class": "card" },
+      [h("div", { "class": "body lessonbody", html: L.html })]));
+
+    if (L.demo_code) {
+      var outPre = h("pre", { "class": "ascii", style: "display:none" },
+        [h("code", { text: L.demo_output || "No recorded output." })]);
+      var toggle = h("button", { "class": "link", type: "button",
+        text: "Show the output" });
+      toggle.addEventListener("click", function () {
+        var open = outPre.style.display !== "none";
+        outPre.style.display = open ? "none" : "";
+        toggle.textContent = open ? "Show the output" : "Hide the output";
+      });
+      wrap.appendChild(card("Example: the demo", null, [
+        h("p", { "class": "sub", text:
+          "Runnable, with no network, no API key and no dependencies. Run it yourself:" }),
+        h("pre", { "class": "code", style: "border:1px solid var(--border);border-radius:10px" },
+          [h("code", { text: L.commands.demo })]),
+        codeBlock("demo.py", L.demo_code, toggle),
+        h("p", { "class": "sub", text:
+          "Recorded output from a real run. Only the latency line changes between runs." }),
+        outPre
+      ]));
+    }
+
+    if (L.exercise_code) {
+      wrap.appendChild(card("Your turn: the exercise", null, [
+        h("p", { "class": "sub", text:
+          "The solution is not in this repository. Fill in the TODOs, then run the " +
+          "tests until they pass. Each failure message states the expected behaviour." }),
+        h("pre", { "class": "code", style: "border:1px solid var(--border);border-radius:10px" },
+          [h("code", { text: L.commands.tests })]),
+        codeBlock("exercise.py", L.exercise_code, null)
+      ]));
+    }
+
+    if (L.quiz_html) {
+      var answers = h("div", { "class": "lessonbody", style: "display:none",
+                               html: L.answers_html || "" });
+      var reveal = h("button", { "class": "btn ghost", type: "button",
+        text: "I have answered. Show the answers." });
+      reveal.addEventListener("click", function () {
+        if (!shown[id]) {
+          shown[id] = true;
+          reveal.textContent = "Yes, reveal them";
+          return;
+        }
+        answers.style.display = "";
+        reveal.style.display = "none";
+      });
+      wrap.appendChild(card("Quiz", null, [
+        h("div", { "class": "lessonbody", html: L.quiz_html }),
+        L.answers_html ? h("p", { "class": "warn", text:
+          "The answers are inside this page, so the only thing stopping you looking " +
+          "early is you. Write your answers down first: the quiz score is one of the " +
+          "four things that decides whether this topic can be marked done." }) : null,
+        L.answers_html ? reveal : null,
+        answers
+      ]));
+    }
+
+    wrap.appendChild(h("section", { "class": "card" }, [h("div", { "class": "body" }, [
+      pager(t),
+      h("p", { "class": "note", style: "margin-top:12px", text:
+        "There is no button here that marks this lesson complete. Status is set from " +
+        "recorded evidence: a passing test run, a scored quiz and an explanation in " +
+        "your own words. A button would only let you lie to yourself." })
+    ])]));
+    return wrap;
+  };
+
   VIEWS.phase = function (id) {
     var ph = DATA.phases.filter(function (p) { return p.id === id; })[0];
     if (!ph) return h("div", { "class": "empty", text: "No phase with id " + id });
@@ -744,7 +956,9 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
         bar(pct(done, ph.topics.length), "Phase " + ph.order + " progress")
       ]),
       card("Topics", null, [h("div", { "class": "grid" },
-        ph.topics.map(function (t) { return topicNode(t, selectTopic); }))])
+        ph.topics.map(function (t) { return topicNode(t, selectTopic); }))]),
+      ph.flowchart ? card("Phase flowchart", null,
+        [h("div", { "class": "flowwrap", html: ph.flowchart })]) : null
     ]);
   };
 
@@ -760,7 +974,8 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
               h("div", { "class": "name", text: t.phase.order + "." + t.order + " " + t.title }),
               h("div", { "class": "sub", text: t.estimated_minutes + " minutes - " + LABELS[t.status] })
             ]),
-            h("a", { "class": "link", href: "../" + t.lesson_path, text: "Open lesson" })
+            h("button", { "class": "btn", type: "button", text: "Read lesson",
+              on: { click: function () { go("#/lesson/" + t.id); } } })
           ]);
         }))
       ] : [h("div", { "class": "empty", text: "No lesson has been scaffolded yet." })]),
@@ -842,7 +1057,8 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
                   ? DATA.meta.quiz_threshold.foundational
                   : DATA.meta.quiz_threshold.advanced) + "%" })
             ]),
-            h("a", { "class": "link", href: "../" + t.quiz_path, text: "Open quiz" })
+            h("button", { "class": "btn ghost", type: "button", text: "Open quiz",
+              on: { click: function () { go("#/lesson/" + t.id); } } })
           ]);
         }))
       ] : [h("div", { "class": "empty", text: "No quiz has been scaffolded yet." })]),
@@ -1114,19 +1330,60 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
   }
   function route() { ROUTE = parse(); render(); }
 
-  function buildNav() {
+  function buildTopNav() {
     var top = document.getElementById("topnav");
     top.textContent = "";
     NAV.forEach(function (item) {
-      top.appendChild(h("button", { type: "button",
+      top.appendChild(h("button", { type: "button", "data-top": item.id,
         on: { click: function () { go(item.route); } } },
         [h("span", { html: ICON[item.icon] }), item.label]));
     });
+  }
+
+  // Which top-level section a detail route belongs to, so the nav still shows
+  // where you are when you are three clicks deep.
+  var SECTION_OF = { lesson: "learn", topic: "roadmap", phase: "roadmap" };
+
+  function phaseOfRoute() {
+    if (ROUTE.view === "phase") {
+      return DATA.phases.filter(function (p) { return p.id === ROUTE.arg; })[0];
+    }
+    if ((ROUTE.view === "lesson" || ROUTE.view === "topic") && byId[ROUTE.arg]) {
+      return byId[ROUTE.arg].phase;
+    }
+    return null;
+  }
+
+  function buildSidebar() {
     var side = document.getElementById("sidenav");
     side.textContent = "";
+    var phase = phaseOfRoute();
+
+    if (phase) {
+      // Chapter mode: the phase you are inside, its topics, current one marked.
+      side.appendChild(h("button", { type: "button", "class": "sub",
+        on: { click: function () { go("#/roadmap"); } } },
+        [h("span", { "class": "muted-ico", html: ICON.map }), "All phases"]));
+      side.appendChild(h("div", { "class": "chapter",
+        text: "Phase " + phase.order + ". " + phase.title }));
+      phase.topics.forEach(function (t) {
+        var current = t.id === ROUTE.arg;
+        var attrs = { type: "button", "data-topic-nav": t.id, "class": "sub",
+          on: { click: function () { go(openRoute(t)); } } };
+        if (current) attrs["aria-current"] = "page";
+        side.appendChild(h("button", attrs, [
+          phase.order + "." + t.order + "  " + t.title +
+          (hasLesson(t.id) ? "" : "  (not written yet)")
+        ]));
+      });
+      return;
+    }
+
     SIDE.forEach(function (item) {
-      side.appendChild(h("button", { type: "button", "data-nav": item.id,
-        on: { click: function () { go(item.route); } } },
+      var attrs = { type: "button", "data-nav": item.id,
+        on: { click: function () { go(item.route); } } };
+      if (item.id === ROUTE.view) attrs["aria-current"] = "page";
+      side.appendChild(h("button", attrs,
         [h("span", { "class": "muted-ico", html: ICON[item.icon] }), item.label]));
       if (item.id === "roadmap") {
         var sub = h("div", { "class": "sub" });
@@ -1141,17 +1398,9 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
   }
 
   function markNav() {
-    [].forEach.call(document.querySelectorAll("#topnav button"), function (b, i) {
-      if (NAV[i].id === ROUTE.view) b.setAttribute("aria-current", "page");
-      else b.removeAttribute("aria-current");
-    });
-    [].forEach.call(document.querySelectorAll("[data-nav]"), function (b) {
-      if (b.getAttribute("data-nav") === ROUTE.view) b.setAttribute("aria-current", "page");
-      else b.removeAttribute("aria-current");
-    });
-    [].forEach.call(document.querySelectorAll("[data-phase-nav]"), function (b) {
-      var on = ROUTE.view === "phase" && b.getAttribute("data-phase-nav") === ROUTE.arg;
-      if (on) b.setAttribute("aria-current", "page");
+    var section = SECTION_OF[ROUTE.view] || ROUTE.view;
+    [].forEach.call(document.querySelectorAll("#topnav button"), function (b) {
+      if (b.getAttribute("data-top") === section) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
     });
   }
@@ -1160,9 +1409,11 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
     var host = document.getElementById("view");
     host.textContent = "";
     host.appendChild(VIEWS[ROUTE.view](ROUTE.arg));
+    buildSidebar();
     markNav();
     buildRail();
     if (ROUTE.view === "roadmap") applyFilters();
+    if (!location.hash.split("#")[2]) window.scrollTo(0, 0);
   }
 
   // ---- theme ------------------------------------------------------------
@@ -1208,7 +1459,7 @@ footer { border-top: 1px solid var(--border); padding: 16px; color: var(--muted)
 
   window.addEventListener("hashchange", route);
   applyTheme();
-  buildNav();
+  buildTopNav();
   route();
 })();
 </script>

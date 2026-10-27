@@ -19,13 +19,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import markdown  # noqa: E402
 from app_template import HTML_TEMPLATE  # noqa: E402
+from flowchart import phase_flowchart, phase_topic_flowchart  # noqa: E402
 from review import load_cards  # noqa: E402
 from curriculum import (  # noqa: E402
     CurriculumError,
@@ -176,6 +179,65 @@ def build_mermaid_overview(doc: dict[str, Any]) -> str:
 
 
 # --------------------------------------------------------------------------- #
+# Lesson content
+# --------------------------------------------------------------------------- #
+
+LESSON_FILES = {
+    "demo": "demo.py",
+    "demo_output": "demo_output.txt",
+    "exercise": "exercise.py",
+    "test": "test_exercise.py",
+    "quiz": "quiz.md",
+    "answers": "quiz_answers.md",
+}
+
+
+def collect_lessons(doc: dict[str, Any], root: Path) -> dict[str, Any]:
+    """Render every scaffolded lesson to HTML at build time.
+
+    The browser never fetches or parses anything: a lesson that is on disk when
+    the build runs is baked into the page, and a lesson that is not simply has no
+    entry. That is what keeps the page readable straight off the filesystem.
+    """
+    lessons: dict[str, Any] = {}
+    for _, topic in iter_topics(doc):
+        if not topic.get("scaffolded"):
+            continue
+        folder = (root / topic["lesson_path"]).parent
+        source = (root / topic["lesson_path"]).read_text(encoding="utf-8")
+        body = markdown.render(source)
+
+        def read(name: str) -> str | None:
+            path = folder / LESSON_FILES[name]
+            return path.read_text(encoding="utf-8") if path.is_file() else None
+
+        quiz = read("quiz")
+        answers = read("answers")
+        demo = read("demo")
+        exercise = read("exercise")
+        lesson_dir = str(Path(topic["lesson_path"]).parent).replace("\\", "/")
+
+        lessons[topic["id"]] = {
+            "html": body,
+            "headings": [
+                {"id": anchor, "text": re.sub(r"<[^>]+>", "", text)}
+                for anchor, text in re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body)
+            ],
+            "quiz_html": markdown.render(quiz) if quiz else None,
+            "answers_html": markdown.render(answers) if answers else None,
+            "demo_code": markdown.highlight(demo, "python") if demo else None,
+            "demo_output": read("demo_output"),
+            "exercise_code": markdown.highlight(exercise, "python") if exercise else None,
+            "dir": lesson_dir,
+            "commands": {
+                "demo": f"python {lesson_dir}/demo.py",
+                "tests": f"python -m pytest {lesson_dir}/ -v",
+            },
+        }
+    return lessons
+
+
+# --------------------------------------------------------------------------- #
 # HTML
 # --------------------------------------------------------------------------- #
 
@@ -183,6 +245,7 @@ def build_html(
     doc: dict[str, Any],
     schedule: dict[str, Any],
     cards: list[dict[str, str]] | None = None,
+    lessons: dict[str, Any] | None = None,
 ) -> str:
     """Render the single-page app.
 
@@ -218,6 +281,7 @@ def build_html(
             "description": phase["description"],
             "order": phase["order"],
             "status": phase["status"],
+            "flowchart": phase_topic_flowchart(phase),
             "topics": topics_out,
         })
 
@@ -232,6 +296,8 @@ def build_html(
         # and never writes it, so scripts/review.py stays the single writer.
         "reviews": {tid: entry for tid, entry in entries.items()},
         "cards": cards or [],
+        "lessons": lessons or {},
+        "flowchart": phase_flowchart(doc),
         "meta": {
             "phase_count": len(phases_out),
             "tracks": [
@@ -368,7 +434,8 @@ def main(argv: list[str] | None = None) -> int:
     projects = {p["id"]: p["name"] for p in doc.get("projects", [])}
     mmd_full = build_mermaid_full(doc, projects)
     mmd_overview = build_mermaid_overview(doc)
-    html = build_html(doc, schedule, cards)
+    lessons = collect_lessons(doc, root)
+    html = build_html(doc, schedule, cards, lessons)
 
     parity = check_output_parity(doc, mmd_full, html)
     links = check_lesson_links(doc, root)

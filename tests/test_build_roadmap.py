@@ -37,7 +37,13 @@ def mmd(doc, projects):
 
 @pytest.fixture
 def html(doc, root):
-    return br.build_html(doc, cur.load_review_schedule(root))
+    """The real page, built the way build_roadmap.main builds it."""
+    return br.build_html(
+        doc,
+        cur.load_review_schedule(root),
+        None,
+        br.collect_lessons(doc, root),
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -180,9 +186,21 @@ def test_html_has_no_remote_resources(html):
         )
 
 
-def test_the_only_external_urls_are_the_attribution(html):
-    urls = set(re.findall(r"https?://[^\s\"'<>)]+", html))
-    assert urls <= {"https://roadmap.sh/ai-engineer"}, f"unexpected URLs: {urls}"
+def test_the_only_external_urls_are_the_attribution_and_the_svg_namespace(html):
+    """An SVG namespace is an identifier, not an address: nothing fetches it."""
+    urls = {u.rstrip("\\") for u in re.findall(r"https?://[^\s\"'<>)]+", html)}
+    assert urls <= {
+        "https://roadmap.sh/ai-engineer",
+        "http://www.w3.org/2000/svg",
+    }, f"unexpected URLs: {urls}"
+
+
+def test_nothing_is_loaded_over_the_network(html):
+    for pattern in (r"src\s*=\s*\"https?://", r"url\(\s*['\"]?https?://",
+                    r"<link", r"@import"):
+        assert not re.search(pattern, html, re.IGNORECASE), (
+            f"found a network load matching {pattern!r}"
+        )
 
 
 def test_footer_credit_is_exactly_the_required_string(html):
@@ -355,7 +373,8 @@ def test_invalid_curriculum_fails_with_a_nonzero_exit_and_writes_nothing(
     fake = tmp_path / "repo"
     (fake / "roadmap").mkdir(parents=True)
     (fake / "scripts").mkdir()
-    for name in ("curriculum.py", "build_roadmap.py", "app_template.py", "review.py"):
+    for name in ("curriculum.py", "build_roadmap.py", "app_template.py",
+                 "review.py", "markdown.py", "flowchart.py"):
         shutil.copy(root / "scripts" / name, fake / "scripts" / name)
 
     broken = json.loads(json.dumps(raw_curriculum))
@@ -381,7 +400,8 @@ def test_a_cycle_is_reported_instead_of_a_misleading_diagram(
     fake = tmp_path / "repo"
     (fake / "roadmap").mkdir(parents=True)
     (fake / "scripts").mkdir()
-    for name in ("curriculum.py", "build_roadmap.py", "app_template.py", "review.py"):
+    for name in ("curriculum.py", "build_roadmap.py", "app_template.py",
+                 "review.py", "markdown.py", "flowchart.py"):
         shutil.copy(root / "scripts" / name, fake / "scripts" / name)
 
     broken = json.loads(json.dumps(raw_curriculum))
@@ -502,3 +522,63 @@ def test_evidence_is_exposed_so_a_claim_can_be_checked(doc, root):
     payload = _payload(br.build_html(doc, cur.load_review_schedule(root)))
     first = payload["phases"][0]["topics"][0]
     assert first["evidence"]["quiz"]["percent"] is None
+
+
+# --------------------------------------------------------------------------- #
+# Lessons are rendered into the page at build time
+# --------------------------------------------------------------------------- #
+
+def test_only_scaffolded_topics_get_a_lesson(doc, root):
+    lessons = br.collect_lessons(doc, root)
+    scaffolded = {t["id"] for _, t in cur.iter_topics(doc) if t["scaffolded"]}
+    assert set(lessons) == scaffolded
+
+
+def test_a_lesson_carries_rendered_html_not_markdown(doc, root):
+    entry = br.collect_lessons(doc, root)["p01-t01"]
+    assert "<h1" in entry["html"] and "<h2" in entry["html"]
+    assert "```" not in entry["html"]
+    assert entry["headings"], "the in-page contents needs the section headings"
+
+
+def test_a_lesson_carries_its_demo_exercise_and_quiz(doc, root):
+    entry = br.collect_lessons(doc, root)["p01-t01"]
+    assert '<span class="k">def</span>' in entry["demo_code"]
+    assert '<span class="k">def</span>' in entry["exercise_code"]
+    assert "validate_input" in entry["demo_output"]
+    assert "<h3" in entry["quiz_html"] or "<h1" in entry["quiz_html"]
+    assert entry["answers_html"]
+
+
+def test_lesson_commands_point_at_real_files(doc, root):
+    entry = br.collect_lessons(doc, root)["p01-t01"]
+    demo = entry["commands"]["demo"].split(" ", 1)[1]
+    assert (root / demo).is_file()
+    assert entry["commands"]["tests"].startswith("python -m pytest ")
+
+
+def test_a_missing_optional_file_is_none_not_a_crash(doc, root, tmp_path):
+    """demo_output.txt is optional: a lesson without one must still build."""
+    entry = br.collect_lessons(doc, root)["p01-t01"]
+    assert entry["demo_output"] is not None
+    doc["phases"][0]["topics"][0]["scaffolded"] = False
+    assert br.collect_lessons(doc, root) == {}
+
+
+def test_the_page_embeds_the_lessons(doc, root, html):
+    payload = _payload(html)
+    assert "p01-t01" in payload["lessons"]
+    assert "VIEWS.lesson =" in html
+
+
+def test_the_page_embeds_the_flowcharts(doc, root):
+    payload = _payload(br.build_html(doc, cur.load_review_schedule(root)))
+    assert payload["flowchart"].startswith("<svg")
+    for phase in payload["phases"]:
+        assert phase["flowchart"].startswith("<svg")
+
+
+def test_lesson_links_open_the_rendered_view_not_the_raw_file(html):
+    assert 'go("#/lesson/" + t.id)' in html, (
+        "the whole point of rendering is that a lesson opens in the page"
+    )

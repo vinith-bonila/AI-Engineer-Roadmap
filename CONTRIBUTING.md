@@ -72,6 +72,7 @@ Each topic directory contains exactly six files:
 | `test_exercise.py` | Meaningful behaviour, edge cases and expected errors. Failure messages state the expected behaviour without giving away the implementation |
 | `quiz.md` | Questions only |
 | `quiz_answers.md` | Answers and grading guidance. Not revealed before an attempt |
+| `demo_output.txt` | Optional. The recorded output of a real `demo.py` run, shown in the page behind a toggle. Regenerate it by hand when the demo changes; the build does not run the demo |
 
 Keep a lesson small enough for one sitting. If a topic needs more, split it into
 several topics rather than writing one enormous document.
