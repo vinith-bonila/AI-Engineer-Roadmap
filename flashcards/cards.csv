@@ -1,0 +1,8 @@
+front,back,topic,last_reviewed,next_review
+Is RAG a model or an architecture?,"An architecture: retrieve, assemble context, generate. You build it.",p01-t01,,
+What makes a system an agent rather than a workflow?,The model chooses actions in a loop and the number of steps is not known in advance.,p01-t01,,
+A fact about one specific customer: lookup or retrieval?,"Lookup, against an authenticated database or API. Not semantic retrieval.",p01-t01,,
+Name the eight stages of an AI request.,"Validate, route, lookup, retrieve, assemble, model, verify, log.",p01-t01,,
+Where must an authorization check live?,"In code, against a verified session, before the model call. Never in the prompt.",p01-t01,,
+"ML engineer versus AI engineer, in one line each.",ML engineer ships a model. AI engineer ships a system built on a model that already exists.,p01-t01,,
+An answer is wrong. What is the first question?,Which stage failed? Check the trace before editing the prompt.,p01-t01,,

@@ -1,0 +1,8 @@
+# Normalise line endings. The generators write LF explicitly, so a build on
+# Windows and a build on Linux produce byte-identical files and the idempotency
+# guarantee holds across machines as well as across runs.
+* text=auto eol=lf
+
+# CSV keeps its own convention: csv.writer emits CRLF, which is the format's
+# standard, and rewriting it here would fight the writer on every save.
+*.csv -text

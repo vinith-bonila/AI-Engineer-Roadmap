@@ -1,0 +1,5 @@
+{
+  "schema_version": "1.0.0",
+  "note": "Mutable review state. Written by scripts/review.py. Dates are ISO 8601 (YYYY-MM-DD) in local time. A topic appears here only after its first assessment, so an empty object is the correct starting state.",
+  "topics": {}
+}

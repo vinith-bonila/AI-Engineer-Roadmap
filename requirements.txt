@@ -1,0 +1,16 @@
+# Runtime dependencies for the learning repository itself.
+#
+# Policy: the curriculum tooling (curriculum validation, roadmap generation,
+# status reporting, spaced repetition) uses the Python standard library only.
+# Nothing in this file is needed to run `python scripts/build_roadmap.py`,
+# `python scripts/status.py` or `python scripts/review.py`.
+#
+# Only the test runner is required, because the verification command for the
+# whole repository is `python -m pytest`.
+
+pytest==8.3.4
+
+# Dependencies for individual phases are introduced in that phase's own
+# requirements file (for example phases/04-llms/requirements.txt) so that
+# Phase 1 never has to install a machine learning stack. Phase lessons that
+# need extra packages say so explicitly in their lesson.md.
